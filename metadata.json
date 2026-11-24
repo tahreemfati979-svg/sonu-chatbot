@@ -1,0 +1,6 @@
+{
+  "name": "Lumina Chat",
+  "description": "A fast, modern AI chatbot web application powered by the Gemini API with conversation management and local storage persistence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
