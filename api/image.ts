@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { generateImageAsset } from '../lib/imageService.mjs';
+import { ImageGenerationError, generateImageAsset } from '../lib/imageService.mjs';
 
 interface VercelRequest extends IncomingMessage {
   body?: unknown;
@@ -49,20 +49,22 @@ export default async function handler(req: VercelRequest, res: ServerResponse): 
 
   const body = await readJsonBody(req);
   const prompt = typeof body?.prompt === 'string' ? body.prompt : '';
+  const enhancedPrompt = typeof body?.enhancedPrompt === 'string' ? body.enhancedPrompt : undefined;
   const aspectRatio = typeof body?.aspectRatio === 'string' ? body.aspectRatio : '1:1';
   const style = typeof body?.style === 'string' ? body.style : '';
   const seed = typeof body?.seed === 'number' ? body.seed : undefined;
 
-  if (!prompt.trim()) {
+  if (!prompt.trim() && !enhancedPrompt?.trim()) {
     sendJson(res, 400, { code: 'INVALID_PROMPT', error: 'Please provide an image prompt.' });
     return;
   }
 
   try {
-    const image = await generateImageAsset({ prompt, aspectRatio, style, seed });
+    const image = await generateImageAsset({ prompt, enhancedPrompt, aspectRatio, style, seed });
     sendJson(res, 200, { image });
   } catch (err) {
-    sendJson(res, 502, {
+    const status = err instanceof ImageGenerationError ? err.status : 502;
+    sendJson(res, status, {
       code: 'IMAGE_GENERATION_FAILED',
       error: err instanceof Error ? err.message : 'Unable to generate image right now.',
     });

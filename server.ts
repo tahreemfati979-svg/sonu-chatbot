@@ -10,7 +10,7 @@ import {
   runLiveChat,
   validateMessages,
 } from './lib/chatHandler.mjs';
-import { generateImageAsset } from './lib/imageService.mjs';
+import { ImageGenerationError, generateImageAsset } from './lib/imageService.mjs';
 
 interface ChatStreamEvent {
   status?: string;
@@ -37,19 +37,22 @@ async function startServer() {
   app.post('/api/image', async (req: Request, res: Response) => {
     try {
       const prompt = typeof req.body?.prompt === 'string' ? req.body.prompt : '';
+      const enhancedPrompt =
+        typeof req.body?.enhancedPrompt === 'string' ? req.body.enhancedPrompt : undefined;
       const aspectRatio = typeof req.body?.aspectRatio === 'string' ? req.body.aspectRatio : '1:1';
       const style = typeof req.body?.style === 'string' ? req.body.style : '';
       const seed = typeof req.body?.seed === 'number' ? req.body.seed : undefined;
 
-      if (!prompt.trim()) {
+      if (!prompt.trim() && !enhancedPrompt?.trim()) {
         res.status(400).json({ code: 'INVALID_PROMPT', error: 'Please provide an image prompt.' });
         return;
       }
 
-      const image = await generateImageAsset({ prompt, aspectRatio, style, seed });
+      const image = await generateImageAsset({ prompt, enhancedPrompt, aspectRatio, style, seed });
       res.json({ image });
     } catch (err) {
-      res.status(502).json({
+      const status = err instanceof ImageGenerationError ? err.status : 502;
+      res.status(status).json({
         code: 'IMAGE_GENERATION_FAILED',
         error: err instanceof Error ? err.message : 'Unable to generate image right now.',
       });

@@ -19,6 +19,12 @@ export interface ApiMessagePayload {
     base64Data?: string;
     textContent?: string;
   }>;
+  generatedImageMeta?: {
+    prompt: string;
+    enhancedPrompt?: string;
+    style?: string;
+    aspectRatio?: ImageAspectRatio;
+  };
 }
 
 export interface StreamCallbacks {
@@ -33,6 +39,7 @@ export interface StreamCallbacks {
 
 export async function generateImageRequest(opts: {
   prompt: string;
+  enhancedPrompt?: string;
   aspectRatio?: ImageAspectRatio;
   style?: string;
   seed?: number;
@@ -43,6 +50,7 @@ export async function generateImageRequest(opts: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       prompt: opts.prompt,
+      enhancedPrompt: opts.enhancedPrompt,
       aspectRatio: opts.aspectRatio || '1:1',
       style: opts.style || '',
       seed: opts.seed,

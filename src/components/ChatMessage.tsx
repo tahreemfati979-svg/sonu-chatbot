@@ -5,6 +5,8 @@ import {
   Copy,
   FileCode,
   FileText,
+  Image as ImageIcon,
+  Loader2,
   Pencil,
   RotateCcw,
   Trash2,
@@ -253,16 +255,35 @@ export const ChatMessage: React.FC<ChatMessageProps> = React.memo(({
               )}
 
               {isWaitingForFirstToken ? (
-                <div className="flex items-center gap-2 py-1 text-sm text-slate-500 dark:text-slate-400">
-                  <span className="inline-flex gap-1" aria-hidden="true">
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
-                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" />
-                  </span>
-                  <span>
-                    {liveStatus || (hasRichCards ? 'Summarizing live data...' : 'Thinking...')}
-                  </span>
-                </div>
+                liveStatus && /image/i.test(liveStatus) ? (
+                  <div className="mb-1 w-full max-w-[360px] overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-[#0B0F17]">
+                    <div className="flex aspect-square max-h-[280px] w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-slate-100 to-slate-200/70 p-6 text-center dark:from-[#0E1523] dark:to-[#131C2E]">
+                      <div className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600/15 text-blue-600 dark:text-blue-400">
+                        <ImageIcon className="h-5 w-5" />
+                        <Loader2 className="absolute -right-1 -bottom-1 h-4 w-4 animate-spin text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                          {liveStatus}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Crafting visual details and rendering artwork...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 py-1 text-sm text-slate-500 dark:text-slate-400">
+                    <span className="inline-flex gap-1" aria-hidden="true">
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" />
+                    </span>
+                    <span>
+                      {liveStatus || (hasRichCards ? 'Summarizing live data...' : 'Thinking...')}
+                    </span>
+                  </div>
+                )
               ) : (
                 message.content && <MarkdownRenderer content={message.content} />
               )}

@@ -17,6 +17,12 @@ export interface ChatMessageInput {
   role: 'user' | 'assistant';
   content: string;
   attachments?: AttachmentPayload[];
+  generatedImageMeta?: {
+    prompt: string;
+    enhancedPrompt?: string;
+    style?: string;
+    aspectRatio?: ImageAspectRatio;
+  };
 }
 
 export interface UserPreferencesPayload {

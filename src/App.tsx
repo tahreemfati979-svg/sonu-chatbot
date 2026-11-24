@@ -83,10 +83,13 @@ type SpeechRecognitionConstructor = new () => BrowserSpeechRecognition;
 const ASPECT_RATIOS: ImageAspectRatio[] = ['1:1', '16:9', '9:16', '4:3'];
 const IMAGE_STYLES = [
   { value: '', label: 'Auto' },
-  { value: 'photorealistic', label: 'Photo' },
-  { value: 'illustration', label: 'Illustration' },
-  { value: 'digital-art', label: 'Digital Art' },
+  { value: 'realistic', label: 'Realistic' },
+  { value: '3d', label: '3D' },
+  { value: 'cartoon', label: 'Cartoon' },
+  { value: 'anime', label: 'Anime' },
+  { value: 'artistic', label: 'Artistic' },
   { value: 'minimalist', label: 'Minimalist' },
+  { value: 'professional', label: 'Professional' },
 ];
 
 function stripMarkdownForSpeech(text: string): string {
@@ -425,7 +428,12 @@ export default function App() {
 
       try {
         const apiMessages = historyForApi
-          .filter((m) => m.content.trim().length > 0 || (m.attachments && m.attachments.length > 0))
+          .filter(
+            (m) =>
+              m.content.trim().length > 0 ||
+              (m.attachments && m.attachments.length > 0) ||
+              Boolean(m.generatedImage)
+          )
           .map((m) => ({
             role: m.role,
             content: m.content,
@@ -436,6 +444,14 @@ export default function App() {
               base64Data: a.base64Data,
               textContent: a.textContent,
             })),
+            generatedImageMeta: m.generatedImage
+              ? {
+                  prompt: m.generatedImage.prompt,
+                  enhancedPrompt: m.generatedImage.enhancedPrompt,
+                  style: m.generatedImage.style,
+                  aspectRatio: m.generatedImage.aspectRatio,
+                }
+              : undefined,
           }));
 
         await streamChatCompletion(
@@ -653,9 +669,11 @@ export default function App() {
   const handleRegenerateVariation = useCallback(
     async (messageId: string, image: GeneratedImage) => {
       if (!activeConversation) return;
+      setError(null);
       try {
         const updated = await generateImageRequest({
           prompt: image.prompt,
+          enhancedPrompt: image.enhancedPrompt,
           aspectRatio: image.aspectRatio,
           style: image.style,
         });
@@ -850,6 +868,9 @@ export default function App() {
     if (lastUserIdx === -1) return;
 
     const historyUpToLastUser = msgs.slice(0, lastUserIdx + 1);
+    const hadGeneratedImage = msgs
+      .slice(lastUserIdx + 1)
+      .some((m) => m.role === 'assistant' && Boolean(m.generatedImage));
     const now = Date.now();
     const assistantPlaceholder: Message = {
       id: generateId(),
@@ -872,9 +893,10 @@ export default function App() {
     await runCompletion(
       activeConversation.id,
       historyUpToLastUser,
-      assistantPlaceholder.id
+      assistantPlaceholder.id,
+      hadGeneratedImage || isImageMode
     );
-  }, [activeConversation, runCompletion]);
+  }, [activeConversation, isImageMode, runCompletion]);
 
   const handleRetryError = useCallback(() => {
     setError(null);

@@ -69,6 +69,7 @@ export interface ChatAttachment {
 
 export interface GeneratedImage {
   prompt: string;
+  enhancedPrompt?: string;
   aspectRatio: ImageAspectRatio;
   style?: string;
   url: string;

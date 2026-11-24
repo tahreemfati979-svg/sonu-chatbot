@@ -93,7 +93,7 @@ function sanitizeForStorage(conversations: Conversation[], stripThumbnails = fal
             dataUrl:
               !stripThumbnails &&
               msg.generatedImage.dataUrl &&
-              msg.generatedImage.dataUrl.length <= 160_000
+              msg.generatedImage.dataUrl.length <= 480_000
                 ? msg.generatedImage.dataUrl
                 : undefined,
           }
